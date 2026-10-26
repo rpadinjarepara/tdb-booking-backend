@@ -4,6 +4,7 @@ import com.tdb.booking.entity.Booking;
 
 public record BookingResponse(
         Long id,
+        String receiptNumber,
         Long slotId,
         String templeName,
         String devoteeName,
@@ -14,6 +15,7 @@ public record BookingResponse(
     public static BookingResponse from(Booking booking) {
         return new BookingResponse(
                 booking.getId(),
+                booking.getReceiptNumber(),
                 booking.getSlot().getId(),
                 booking.getSlot().getTempleName(),
                 booking.getDevoteeName(),

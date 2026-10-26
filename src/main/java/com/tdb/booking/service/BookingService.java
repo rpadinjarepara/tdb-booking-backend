@@ -8,6 +8,9 @@ import com.tdb.booking.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 public class BookingService {
 
@@ -34,9 +37,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingResponse createBooking(
-            CreateBookingRequest request) {
-
+    public BookingResponse createBooking(CreateBookingRequest request) {
         // P3: Safe Retries / Idempotency Check
         if (request.idempotencyKey() != null && !request.idempotencyKey().isBlank()) {
             var existingBooking = bookingRepository.findByIdempotencyKey(request.idempotencyKey());
@@ -45,7 +46,7 @@ public class BookingService {
             }
         }
 
-        // Lock this slot row while checking and updating capacity.
+        // P2: Lock this slot row while checking and updating capacity (Pessimistic Locking)
         DarshanSlot slot = slotRepository
                 .findByIdForUpdate(request.slotId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -60,34 +61,19 @@ public class BookingService {
         slot.addBooking(request.ticketCount());
         slotRepository.save(slot);
 
+        // P5: Generate unique receipt number
+        String receiptNumber = "TDB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
         Booking booking = new Booking(
                 slot,
                 request.devoteeName().trim(),
                 request.phoneNumber(),
                 request.ticketCount(),
-                request.idempotencyKey() // Pass the idempotency key here
+                request.idempotencyKey(),
+                receiptNumber
         );
 
-        // Both operations participate in the same transaction.
         return BookingResponse.from(bookingRepository.save(booking));
-    }
-
-    @Transactional(readOnly = true)
-    public BookingResponse getBooking(Long id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Booking not found: " + id));
-
-        return BookingResponse.from(booking);
-    }
-
-    @Transactional(readOnly = true)
-    public SlotResponse getSlot(Long id) {
-        DarshanSlot slot = slotRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Slot not found: " + id));
-
-        return SlotResponse.from(slot);
     }
 
     @Transactional
@@ -104,8 +90,8 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Associated slot not found"));
 
         // Verify slot start time has not passed
-        var slotDateTime = java.time.LocalDateTime.of(slot.getSlotDate(), slot.getSlotTime());
-        if (java.time.LocalDateTime.now().isAfter(slotDateTime)) {
+        LocalDateTime slotDateTime = LocalDateTime.of(slot.getSlotDate(), slot.getSlotTime());
+        if (LocalDateTime.now().isAfter(slotDateTime)) {
             throw new IllegalStateException("Cannot cancel booking after the slot start time has passed");
         }
 
@@ -114,5 +100,32 @@ public class BookingService {
 
         booking.cancel();
         return BookingResponse.from(bookingRepository.save(booking));
+    }
+
+    @Transactional(readOnly = true)
+    public BookingResponse getBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found: " + id));
+
+        return BookingResponse.from(booking);
+    }
+
+    @Transactional(readOnly = true)
+    public BookingResponse getBookingByReceipt(String receiptNumber) {
+        Booking booking = bookingRepository.findByReceiptNumber(receiptNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with receipt: " + receiptNumber));
+
+        return BookingResponse.from(booking);
+    }
+
+    @Transactional(readOnly = true)
+    public SlotResponse getSlot(Long id) {
+        DarshanSlot slot = slotRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Slot not found: " + id));
+
+        return SlotResponse.from(slot);
     }
 }
