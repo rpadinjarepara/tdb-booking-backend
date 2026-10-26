@@ -24,22 +24,23 @@ public class Booking {
     @Column(nullable = false)
     private Integer ticketCount;
 
-    @Column(unique = true)
+    @Column(name = "idempotency_key", unique = true)
     private String idempotencyKey;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now(); // Added timestamp field
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String receiptNumber;
+
     @Column(nullable = false)
     private boolean cancelled = false;
 
-    public String getReceiptNumber() {
-        return receiptNumber;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    protected Booking() {
+        // JPA protected no-args constructor
     }
 
-    protected Booking() {}
-
+    // 6-parameter constructor used in BookingService
     public Booking(
             DarshanSlot slot,
             String devoteeName,
@@ -54,7 +55,14 @@ public class Booking {
         this.ticketCount = ticketCount;
         this.idempotencyKey = idempotencyKey;
         this.receiptNumber = receiptNumber;
+        this.createdAt = LocalDateTime.now();
     }
+
+    public void cancel() {
+        this.cancelled = true;
+    }
+
+    // Getters
     public Long getId() {
         return id;
     }
@@ -79,17 +87,15 @@ public class Booking {
         return idempotencyKey;
     }
 
-    public LocalDateTime getCreatedAt() { // Added getter method
-        return createdAt;
+    public String getReceiptNumber() {
+        return receiptNumber;
     }
-
 
     public boolean isCancelled() {
         return cancelled;
     }
 
-    public void cancel() {
-        this.cancelled = true;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
-
 }
