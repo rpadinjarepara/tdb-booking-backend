@@ -1,7 +1,7 @@
 package com.tdb.booking.entity;
 
 import jakarta.persistence.*;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -11,7 +11,7 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "slot_id", nullable = false)
     private DarshanSlot slot;
 
@@ -22,21 +22,29 @@ public class Booking {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private int ticketCount;
+    private Integer ticketCount;
 
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(unique = true)
+    private String idempotencyKey;
 
-    protected Booking() {
-    }
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now(); // Added timestamp field
 
-    public Booking(DarshanSlot slot, String devoteeName,
-                   String phoneNumber, int ticketCount) {
+    protected Booking() {}
+
+    public Booking(
+            DarshanSlot slot,
+            String devoteeName,
+            String phoneNumber,
+            Integer ticketCount,
+            String idempotencyKey
+    ) {
         this.slot = slot;
         this.devoteeName = devoteeName;
         this.phoneNumber = phoneNumber;
         this.ticketCount = ticketCount;
-        this.createdAt = Instant.now();
+        this.idempotencyKey = idempotencyKey;
+        this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -55,11 +63,16 @@ public class Booking {
         return phoneNumber;
     }
 
-    public int getTicketCount() {
+    public Integer getTicketCount() {
         return ticketCount;
     }
 
-    public Instant getCreatedAt() {
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public LocalDateTime getCreatedAt() { // Added getter method
         return createdAt;
     }
+
 }

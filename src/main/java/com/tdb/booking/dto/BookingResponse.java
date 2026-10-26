@@ -1,7 +1,6 @@
 package com.tdb.booking.dto;
 
 import com.tdb.booking.entity.Booking;
-import java.time.Instant;
 
 public record BookingResponse(
         Long id,
@@ -9,7 +8,7 @@ public record BookingResponse(
         String devoteeName,
         String phoneNumber,
         int ticketCount,
-        Instant createdAt
+        java.time.LocalDateTime createdAt
 ) {
     public static BookingResponse from(Booking booking) {
         return new BookingResponse(

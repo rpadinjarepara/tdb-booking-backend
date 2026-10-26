@@ -37,6 +37,14 @@ public class BookingService {
     public BookingResponse createBooking(
             CreateBookingRequest request) {
 
+        // P3: Safe Retries / Idempotency Check
+        if (request.idempotencyKey() != null && !request.idempotencyKey().isBlank()) {
+            var existingBooking = bookingRepository.findByIdempotencyKey(request.idempotencyKey());
+            if (existingBooking.isPresent()) {
+                return BookingResponse.from(existingBooking.get());
+            }
+        }
+
         // Lock this slot row while checking and updating capacity.
         DarshanSlot slot = slotRepository
                 .findByIdForUpdate(request.slotId())
@@ -50,12 +58,14 @@ public class BookingService {
         }
 
         slot.addBooking(request.ticketCount());
+        slotRepository.save(slot);
 
         Booking booking = new Booking(
                 slot,
                 request.devoteeName().trim(),
                 request.phoneNumber(),
-                request.ticketCount()
+                request.ticketCount(),
+                request.idempotencyKey() // Pass the idempotency key here
         );
 
         // Both operations participate in the same transaction.
