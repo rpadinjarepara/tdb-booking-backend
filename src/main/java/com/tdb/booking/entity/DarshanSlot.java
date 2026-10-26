@@ -92,4 +92,5 @@ public class DarshanSlot {
     public void addBooking(int ticketCount) {
         this.bookedTickets += ticketCount;
     }
+
 }

@@ -20,6 +20,8 @@ public record CreateBookingRequest(
 
         @NotNull(message = "Ticket count is required")
         @Min(value = 1, message = "At least one ticket must be booked")
-        Integer ticketCount
+        Integer ticketCount,
+
+        String idempotencyKey // P3: Safe Retries / Idempotency Key
 ) {
 }
