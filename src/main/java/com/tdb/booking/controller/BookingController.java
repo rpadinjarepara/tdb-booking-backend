@@ -56,8 +56,4 @@ public class BookingController {
         return bookingService.getBookingByReceipt(receiptNumber);
     }
 
-    @GetMapping("/receipt/{receiptNumber}")
-    public BookingResponse getBookingByReceipt(@PathVariable String receiptNumber) {
-        return bookingService.getBookingByReceipt(receiptNumber);
-    }
 }
