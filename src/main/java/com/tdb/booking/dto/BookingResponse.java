@@ -5,19 +5,21 @@ import com.tdb.booking.entity.Booking;
 public record BookingResponse(
         Long id,
         Long slotId,
+        String templeName,
         String devoteeName,
         String phoneNumber,
-        int ticketCount,
-        java.time.LocalDateTime createdAt
+        Integer ticketCount,
+        boolean cancelled
 ) {
     public static BookingResponse from(Booking booking) {
         return new BookingResponse(
                 booking.getId(),
                 booking.getSlot().getId(),
+                booking.getSlot().getTempleName(),
                 booking.getDevoteeName(),
                 booking.getPhoneNumber(),
                 booking.getTicketCount(),
-                booking.getCreatedAt()
+                booking.isCancelled()
         );
     }
 }

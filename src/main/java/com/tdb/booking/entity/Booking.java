@@ -74,5 +74,15 @@ public class Booking {
     public LocalDateTime getCreatedAt() { // Added getter method
         return createdAt;
     }
+    @Column(nullable = false)
+    private boolean cancelled = false;
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void cancel() {
+        this.cancelled = true;
+    }
 
 }
