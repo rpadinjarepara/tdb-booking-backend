@@ -92,5 +92,8 @@ public class DarshanSlot {
     public void addBooking(int ticketCount) {
         this.bookedTickets += ticketCount;
     }
+    public void releaseBooking(int count) {
+        this.bookedTickets = Math.max(0, this.bookedTickets - count);
+    }
 
 }

@@ -89,4 +89,30 @@ public class BookingService {
 
         return SlotResponse.from(slot);
     }
+
+    @Transactional
+    public BookingResponse cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
+
+        // Idempotent cancellation: if already cancelled, return current state
+        if (booking.isCancelled()) {
+            return BookingResponse.from(booking);
+        }
+
+        DarshanSlot slot = slotRepository.findByIdForUpdate(booking.getSlot().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Associated slot not found"));
+
+        // Verify slot start time has not passed
+        var slotDateTime = java.time.LocalDateTime.of(slot.getSlotDate(), slot.getSlotTime());
+        if (java.time.LocalDateTime.now().isAfter(slotDateTime)) {
+            throw new IllegalStateException("Cannot cancel booking after the slot start time has passed");
+        }
+
+        slot.releaseBooking(booking.getTicketCount());
+        slotRepository.save(slot);
+
+        booking.cancel();
+        return BookingResponse.from(bookingRepository.save(booking));
+    }
 }
