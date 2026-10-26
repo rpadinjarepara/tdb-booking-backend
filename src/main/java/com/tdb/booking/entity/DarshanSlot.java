@@ -1,6 +1,10 @@
 package com.tdb.booking.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -12,65 +16,80 @@ public class DarshanSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String templeName;
+    private LocalDate slotDate;
+    private LocalTime slotTime;
+    private int capacity;         // Total maximum capacity
+    private int bookedTickets = 0; // Tickets booked so far
 
-    @Column(nullable = false)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private LocalTime startTime;
-
-    @Column(nullable = false)
-    private int capacity;
-
-    @Column(nullable = false)
-    private int bookedTickets = 0;
-
-    protected DarshanSlot() {
+    // No-args constructor required by JPA
+    public DarshanSlot() {
     }
 
-    public DarshanSlot(String templeName, LocalDate date,
-                       LocalTime startTime, int capacity) {
+    // 4-args constructor matching BookingService
+    public DarshanSlot(String templeName, LocalDate slotDate, LocalTime slotTime, int capacity) {
         this.templeName = templeName;
-        this.date = date;
-        this.startTime = startTime;
+        this.slotDate = slotDate;
+        this.slotTime = slotTime;
         this.capacity = capacity;
+        this.bookedTickets = 0;
     }
 
-    public int getRemainingTickets() {
-        return capacity - bookedTickets;
-    }
-
-    public void addBooking(int ticketCount) {
-        if (ticketCount > getRemainingTickets()) {
-            throw new IllegalArgumentException(
-                    "Not enough tickets available");
-        }
-        bookedTickets += ticketCount;
-    }
-
+    // Getters and Setters
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTempleName() {
         return templeName;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public void setTempleName(String templeName) {
+        this.templeName = templeName;
     }
 
-    public LocalTime getStartTime() {
-        return startTime;
+    public LocalDate getSlotDate() {
+        return slotDate;
+    }
+
+    public void setSlotDate(LocalDate slotDate) {
+        this.slotDate = slotDate;
+    }
+
+    public LocalTime getSlotTime() {
+        return slotTime;
+    }
+
+    public void setSlotTime(LocalTime slotTime) {
+        this.slotTime = slotTime;
     }
 
     public int getCapacity() {
         return capacity;
     }
 
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
     public int getBookedTickets() {
         return bookedTickets;
+    }
+
+    public void setBookedTickets(int bookedTickets) {
+        this.bookedTickets = bookedTickets;
+    }
+
+    // Helper methods used in BookingService and SlotResponse
+    public int getRemainingTickets() {
+        return capacity - bookedTickets;
+    }
+
+    public void addBooking(int ticketCount) {
+        this.bookedTickets += ticketCount;
     }
 }
