@@ -33,4 +33,9 @@ public class BookingController {
     public BookingResponse cancelBooking(@PathVariable Long id) {
         return bookingService.cancelBooking(id);
     }
+
+    @GetMapping("/receipt/{receiptNumber}")
+    public BookingResponse getBookingByReceipt(@PathVariable String receiptNumber) {
+        return bookingService.getBookingByReceipt(receiptNumber);
+    }
 }

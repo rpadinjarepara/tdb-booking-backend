@@ -29,6 +29,14 @@ public class Booking {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // Added timestamp field
+    @Column(unique = true, nullable = false)
+    private String receiptNumber;
+    @Column(nullable = false)
+    private boolean cancelled = false;
+
+    public String getReceiptNumber() {
+        return receiptNumber;
+    }
 
     protected Booking() {}
 
@@ -37,16 +45,16 @@ public class Booking {
             String devoteeName,
             String phoneNumber,
             Integer ticketCount,
-            String idempotencyKey
+            String idempotencyKey,
+            String receiptNumber
     ) {
         this.slot = slot;
         this.devoteeName = devoteeName;
         this.phoneNumber = phoneNumber;
         this.ticketCount = ticketCount;
         this.idempotencyKey = idempotencyKey;
-        this.createdAt = LocalDateTime.now();
+        this.receiptNumber = receiptNumber;
     }
-
     public Long getId() {
         return id;
     }
@@ -74,8 +82,7 @@ public class Booking {
     public LocalDateTime getCreatedAt() { // Added getter method
         return createdAt;
     }
-    @Column(nullable = false)
-    private boolean cancelled = false;
+
 
     public boolean isCancelled() {
         return cancelled;
